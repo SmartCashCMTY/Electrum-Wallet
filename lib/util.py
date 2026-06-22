@@ -433,8 +433,9 @@ def format_satoshis(x, is_diff=False, num_zeros = 0, decimal_point = 8, whitespa
     dp = localeconv()['decimal_point']
     fract_part = ("{:0" + str(decimal_point) + "}").format(abs(x) % scale_factor)
     fract_part = fract_part.rstrip('0')
-    if len(fract_part) < num_zeros:
-        fract_part += "0" * (num_zeros - len(fract_part))
+    min_digits = max(2, num_zeros)
+    if len(fract_part) < min_digits:
+        fract_part += "0" * (min_digits - len(fract_part))
     result = integer_part + dp + fract_part
     if whitespaces:
         result += " " * (decimal_point - len(fract_part))

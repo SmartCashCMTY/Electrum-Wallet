@@ -63,10 +63,11 @@ class StatusBarButton(QPushButton):
         QPushButton.__init__(self, icon, '')
         self.setToolTip(tooltip)
         self.setFlat(True)
-        self.setMaximumWidth(25)
+        self.setMaximumWidth(36)
         self.clicked.connect(self.onPress)
         self.func = func
-        self.setIconSize(QSize(25,25))
+        self.setIconSize(QSize(28,28))
+        self.setMinimumHeight(36)
 
     def onPress(self, checked=False):
         '''Drops the unwanted PyQt5 "checked" argument'''
@@ -125,7 +126,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.need_update = threading.Event()
 
         self.decimal_point = config.get('decimal_point', 8)
-        self.num_zeros     = int(config.get('num_zeros',0))
+        self.num_zeros     = int(config.get('num_zeros',2))
 
         self.completions = QStringListModel()
 
@@ -2017,6 +2018,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
     def create_status_bar(self):
 
         sb = QStatusBar()
+        sb.setMinimumHeight(44)
+        sb.setStyleSheet('QStatusBar { min-height: 44px; } QStatusBar::item { border: none; }')
         sb.setFixedHeight(35)
         qtVersion = qVersion()
 

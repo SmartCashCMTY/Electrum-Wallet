@@ -619,3 +619,18 @@ class FxThread(ThreadJob):
         from electrum_smart.util import timestamp_to_datetime
         date = timestamp_to_datetime(timestamp)
         return self.history_rate(date)
+
+class SmartCashCMC(ExchangeBase):
+    """SmartCash price from CoinMarketCap"""
+
+    def get_rates(self, ccy):
+        try:
+            json = self.get_json('api.coinmarketcap.com', '/data-api/v3/cryptocurrency/detail?id=1828')
+            price = json['data']['statistics']['price']
+            return {'USD': Decimal(str(price))}
+        except Exception as e:
+            self.print_error("CMC error:", e)
+            return {}
+
+    def history_ccys(self):
+        return ['USD']

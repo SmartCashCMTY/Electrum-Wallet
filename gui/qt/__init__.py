@@ -118,6 +118,19 @@ class ElectrumGui:
         self.app.new_window_signal.connect(self.start_new_window)
         run_hook('init_qt', self)
         ColorScheme.update_from_widget(QWidget())
+        self.app.setStyleSheet("""
+            * { font-size: 14px; }
+            QTreeView { font-size: 14px; }
+            QTableView { font-size: 14px; }
+            QListView { font-size: 14px; }
+            QLineEdit { font-size: 14px; padding: 4px; }
+            QTextEdit { font-size: 14px; padding: 4px; }
+            QPushButton { font-size: 14px; padding: 6px 16px; min-height: 32px; }
+            QLabel { font-size: 14px; }
+            QComboBox { font-size: 14px; padding: 4px; }
+            QStatusBar { min-height: 42px; padding: 4px; }
+            QStatusBar::item { border: none; }
+        """)
 
     def build_tray_menu(self):
         # Avoid immediate GC of old menu when window closed via its action
