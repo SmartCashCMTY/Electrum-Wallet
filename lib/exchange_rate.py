@@ -491,7 +491,7 @@ class FxThread(ThreadJob):
         return d.get(ccy, [])
 
     def ccy_amount_str(self, amount, commas):
-        prec = CCY_PRECISIONS.get(self.ccy, 2)
+        prec = CCY_PRECISIONS.get(self.ccy, 6)
         fmt_str = "{:%s.%df}" % ("," if commas else "", max(0, prec))
         try:
             rounded_amount = round(amount, prec)
@@ -619,6 +619,22 @@ class FxThread(ThreadJob):
         from electrum_smart.util import timestamp_to_datetime
         date = timestamp_to_datetime(timestamp)
         return self.history_rate(date)
+
+
+class CoinGeckoSMART(ExchangeBase):
+    """SmartCash price from CoinGecko"""
+
+    def get_rates(self, ccy):
+        try:
+            json = self.get_json('api.coingecko.com', '/api/v3/simple/price?ids=smartcash&vs_currencies=usd')
+            price = json['smartcash']['usd']
+            return {'USD': Decimal(str(price))}
+        except Exception as e:
+            self.print_error("CoinGecko error:", e)
+            return {}
+
+    def history_ccys(self):
+        return ['USD']
 
 class SmartCashCMC(ExchangeBase):
     """SmartCash price from CoinMarketCap"""

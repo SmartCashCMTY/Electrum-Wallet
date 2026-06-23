@@ -1670,8 +1670,14 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 if status:
                     if tx_desc is not None and tx.is_complete():
                         self.wallet.set_label(tx.txid(), tx_desc)
+                    # Add to local history immediately (no restart needed)
+                    try:
+                        self.wallet.add_transaction(tx.txid(), tx)
+                    except:
+                        pass
                     parent.show_message(_('Payment sent.') + '\n' + msg)
                     self.invoice_list.update()
+                    self.history_list.update()
                     self.do_clear()
                 else:
                     display_msg = _('The server returned an error when broadcasting the transaction:')

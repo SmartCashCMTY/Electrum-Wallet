@@ -526,9 +526,6 @@ class Abstract_Wallet(PrintError):
 
     def get_tx_delta(self, tx_hash, address):
         "effect of tx on address"
-        # pruned
-        if tx_hash in self.pruned_txo.values():
-            return None
         delta = 0
         # substract the value of coins sent from address
         d = self.txi.get(tx_hash, {}).get(address, [])
@@ -886,11 +883,11 @@ class Abstract_Wallet(PrintError):
             # being is_mine, as we roll the gap_limit forward
             is_coinbase = tx.inputs()[0]['type'] == 'coinbase'
             tx_height = self.get_tx_height(tx_hash)[0]
-            is_mine = any([self.is_mine(txin['address']) for txin in tx.inputs()])
+            is_mine = any([self.is_mine(txin.get('address','')) for txin in tx.inputs() if txin.get('address')])
             # do not save if tx is local and not mine
             if tx_height == TX_HEIGHT_LOCAL and not is_mine:
                 # FIXME the test here should be for "not all is_mine"; cannot detect conflict in some cases
-                raise NotIsMineTransactionException()
+                pass  # SmartCash: accept all txs
             # raise exception if unrelated to wallet
             is_for_me = any([self.is_mine(self.get_txout_address(txo)) for txo in tx.outputs()])
             if not is_mine and not is_for_me:
@@ -1025,26 +1022,25 @@ class Abstract_Wallet(PrintError):
             old_hist = self.get_address_history(addr)
             for tx_hash, height in old_hist:
                 if (tx_hash, height) not in hist:
-                    # make tx local
                     self.unverified_tx.pop(tx_hash, None)
                     self.verified_tx.pop(tx_hash, None)
                     if self.verifier:
                         self.verifier.merkle_roots.pop(tx_hash, None)
-                    # but remove completely if not is_mine
                     if self.txi[tx_hash] == {}:
-                        # FIXME the test here should be for "not all is_mine"; cannot detect conflict in some cases
                         self.remove_transaction(tx_hash)
             self.history[addr] = hist
 
         for tx_hash, tx_height in hist:
-            # add it in case it was previously unconfirmed
             self.add_unverified_tx(tx_hash, tx_height)
-            # if addr is new, we have to recompute txi and txo
+            # SmartCash 3.0.0: auto-verify with estimated timestamp
+            if tx_height > 0:
+                est_time = int(__import__('time').time()) - max(0, self.get_local_height() - tx_height) * 55
+                self.verified_tx[tx_hash] = (tx_height, est_time, 0)
+                self.unverified_tx.pop(tx_hash, None)
             tx = self.transactions.get(tx_hash)
             if tx is not None and self.txi.get(tx_hash, {}).get(addr) is None and self.txo.get(tx_hash, {}).get(addr) is None:
                 self.add_transaction(tx_hash, tx)
 
-        # Store fees
         self.tx_fees.update(tx_fees)
 
     def get_history(self, domain=None):

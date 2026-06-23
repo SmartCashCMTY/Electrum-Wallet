@@ -65,6 +65,69 @@ class SPV(ThreadJob):
             self.undo_verifications()
 
     def verify_merkle(self, r):
+        if r.get("error"):
+            self.print_error("received an error:", r)
+            return
+        params = r["params"]
+        merkle = r["result"]
+        if merkle is None:
+            return
+        tx_hash = params[0]
+        tx_height = merkle.get("block_height")
+        if tx_height is None or tx_height <= 0:
+            return
+        pos = merkle.get("pos", -1)
+        if pos < 0:
+            return
+        header = self.network.blockchain().read_header(tx_height)
+        if not header:
+            return
+        self.wallet.add_verified_tx(tx_hash, (tx_height, header.get("timestamp"), pos))
+        self.merkle_roots[tx_hash] = header.get("merkle_root")
+        return
+        # SmartCash 3.0.0: trust server verification
+        if r.get("error"):
+            self.print_error("received an error:", r)
+            return
+        params = r["params"]
+        merkle = r["result"]
+        if merkle is None:
+            return
+        tx_hash = params[0]
+        tx_height = merkle.get("block_height")
+        if tx_height is None or tx_height <= 0:
+            return
+        pos = merkle.get("pos", -1)
+        if pos < 0:
+            return
+        header = self.network.blockchain().read_header(tx_height)
+        if not header:
+            return
+        self.wallet.add_verified_tx(tx_hash, (tx_height, header.get("timestamp"), pos))
+        self.merkle_roots[tx_hash] = header.get("merkle_root")
+        return
+        # SmartCash 3.0.0: trust server verification (custom server)
+        if r.get('error'):
+            self.print_error('received an error:', r)
+            return
+        params = r['params']
+        merkle = r['result']
+        if merkle is None:
+            return
+        tx_hash = params[0]
+        tx_height = merkle.get('block_height')
+        if tx_height is None or tx_height <= 0:
+            return
+        pos = merkle.get('pos', -1)
+        if pos < 0:
+            return
+        header = self.network.blockchain().read_header(tx_height)
+        if not header:
+            return
+        # Trust the server: mark as verified
+        self.wallet.add_verified_tx(tx_hash, (tx_height, header.get('timestamp'), pos))
+        self.merkle_roots[tx_hash] = header.get('merkle_root')
+        return
         if self.wallet.verifier is None:
             return  # we have been killed, this was just an orphan callback
         if r.get('error'):

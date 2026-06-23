@@ -28,11 +28,20 @@ def rpc_sync(method, params=[]):
     auth = base64.b64encode(f"{RPC_USER}:{RPC_PASS}".encode()).decode()
     req = urllib.request.Request(RPC_URL, data=data.encode(),
         headers={"Content-Type": "application/json", "Authorization": f"Basic {auth}"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        result = json.loads(resp.read())
-        if result.get("error"):
-            raise Exception(result["error"])
-        return result["result"]
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read())
+            if result.get("error"):
+                raise Exception(str(result["error"]))
+            return result["result"]
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        try:
+            err = json.loads(body)
+            msg = err.get("error", {}).get("message", str(e))
+        except:
+            msg = body[:200] if body else str(e)
+        raise Exception(msg)
 
 def rpc_rest_sync(path):
     auth = base64.b64encode(f"{RPC_USER}:{RPC_PASS}".encode()).decode()
@@ -112,7 +121,7 @@ def compute_merkle_branch(txid, height):
                 target_pos = i
                 break
         if target_pos is None:
-            return {"block_height": height, "merkle": [], "pos": 0}
+            return None
         branch = []
         idx = target_pos
         hashes = tx_hashes[:]
@@ -132,7 +141,7 @@ def compute_merkle_branch(txid, height):
         return {"block_height": height, "merkle": branch, "pos": target_pos}
     except Exception as e:
         log.error(f"Merkle error {txid}/{height}: {e}")
-        return {"block_height": height, "merkle": [], "pos": 0}
+        return None
 
 async def handle_client(reader, writer):
     try:
