@@ -28,8 +28,10 @@ python electrum-smart
 - 100 MB disk space
 - Internet connection
 
-## Server
-Connects to ElectrumX at 151.252.59.31:50001 (TCP) / 50002 (SSL)
+## Servers
+- **Primary:** 151.252.59.32:50001 (TCP) / 50002 (SSL) — CT205
+- **Backup:** 151.252.59.33:50001 (TCP) / 50002 (SSL) — CT206
+- Auto-failover between both servers
 
 ## Credits
 Original SmartCash Project: https://github.com/SmartCash
