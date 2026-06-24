@@ -801,6 +801,8 @@ class Abstract_Wallet(PrintError):
             for tx_hash in related_txns:
                 tx_height = self.get_tx_height(tx_hash)[0]
                 h.append((tx_hash, tx_height))
+            if not h:
+                h = self.history.get(addr, [])
         return h
 
     def _add_tx_to_local_history(self, txid):
