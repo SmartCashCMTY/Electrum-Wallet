@@ -42,3 +42,15 @@ MIT License - see LICENSE file
 
 ## Disclaimer
 This software is provided "as is", without warranty of any kind. Use at your own risk.
+
+## Security
+- Keep your system updated with security patches
+- Use firewall to restrict access to necessary ports only
+- Never expose RPC ports to the internet
+- Use strong, unique passwords
+
+Automatic security updates:
+```bash
+sudo bash auto-updates-setup.sh
+```
+Configures unattended-upgrades every 14 days.
