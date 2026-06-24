@@ -642,9 +642,10 @@ class Network(util.DaemonThread):
     def subscribe_to_addresses(self, addresses, callback):
         # Register addresses on server first (auto-populates ADDRESS_MAP)
         reg_msgs = [('blockchain.address.subscribe', [addr]) for addr in addresses]
+        self.send(reg_msgs, lambda x: None)
         hashes = [self.addr_to_scripthash(addr) for addr in addresses]
         sub_msgs = [('blockchain.scripthash.subscribe', [x]) for x in hashes]
-        self.send(reg_msgs + sub_msgs, self.overload_cb(callback))
+        self.send(sub_msgs, self.overload_cb(callback))
 
     def request_address_history(self, address, callback):
         h = self.addr_to_scripthash(address)
